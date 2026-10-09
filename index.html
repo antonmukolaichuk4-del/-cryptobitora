@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0f18">
+<title>CryptoBitora Wallet — Demo</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#090e16;--panel:#111827;--panel2:#172033;--line:#263247;--text:#f7f9fc;--muted:#91a0b8;--good:#45d483;--bad:#ff6d7a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(circle at top,#14213a 0,#090e16 36%);color:var(--text);padding:18px 16px 28px}
+.app{max-width:520px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.brand{font-size:22px;font-weight:850}
+.demo{font-size:11px;font-weight:800;letter-spacing:.08em;padding:7px 10px;border:1px solid #3b4b69;border-radius:999px;color:#cdd7e7}
+.card{background:#111827;border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:16px}
+.hidden{display:none!important}
+h1{font-size:26px;margin:0 0 8px} h2{font-size:18px;margin:0 0 12px}
+.muted{color:var(--muted)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}
+.tab,.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:14px;padding:13px 14px;font-weight:750;font-size:15px}
+.tab.active,.btn.primary{background:#eaf3ff;color:#09111f;border-color:#eaf3ff}
+.btn.ghost{background:transparent}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 7px}
+input{width:100%;border:1px solid var(--line);background:#0d1422;color:var(--text);border-radius:14px;padding:14px;font-size:16px;outline:none}
+.msg{min-height:22px;font-size:13px;margin-top:10px;color:#ffd0d5}
+.ok{color:var(--good)!important}
+.header-user{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.who{font-size:14px;color:var(--muted)} .who strong{display:block;color:var(--text);font-size:18px;margin-bottom:2px}
+.badge{display:inline-block;margin-left:7px;font-size:10px;padding:4px 7px;border-radius:999px;border:1px solid #536888;color:#cfe0fa;vertical-align:middle}
+.balance-label{color:var(--muted);font-size:13px}
+.balance{font-size:42px;font-weight:900;margin:6px 0 3px}
+.transfer-grid{display:grid;grid-template-columns:1fr 120px;gap:9px}
+.market,.history{display:grid;gap:10px}
+.coin,.hist-item{background:#0f1726;border:1px solid var(--line);border-radius:16px;padding:14px}
+.coin{display:flex;justify-content:space-between;align-items:center}
+.coin-left{display:flex;align-items:center;gap:12px}
+.icon{width:42px;height:42px;border-radius:50%;background:#1c2940;display:grid;place-items:center;font-weight:900;font-size:18px}
+.coin-name{font-weight:800} .ticker{color:var(--muted);font-size:12px}
+.price{text-align:right} .price strong{display:block} .chg{font-size:12px;font-weight:800;margin-top:3px}
+.up{color:var(--good)} .down{color:var(--bad)}
+.note{font-size:12px;line-height:1.45;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">CryptoBitora Wallet</div>
+    <div class="demo">DEMO ONLY</div>
+  </div>
+
+  <section id="authCard" class="card">
+    <h1>CryptoBitora</h1>
+    <p class="muted">Демо-кошелёк без реальных денег и криптовалюты.</p>
+
+    <div class="tabs">
+      <button id="loginTab" class="tab active">Войти</button>
+      <button id="registerTab" class="tab">Регистрация</button>
+    </div>
+
+    <div id="loginForm">
+      <label>Логин</label>
+      <input id="loginUser" autocomplete="username" placeholder="Логин">
+      <label>Пароль</label>
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="Пароль">
+      <button id="loginBtn" class="btn primary" style="width:100%;margin-top:14px">Войти</button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <label>Логин</label>
+      <input id="regUser" autocomplete="username" placeholder="Придумайте логин">
+      <label>Пароль</label>
+      <input id="regPass" type="password" autocomplete="new-password" placeholder="Придумайте пароль">
+      <label>Повторите пароль</label>
+      <input id="regPass2" type="password" autocomplete="new-password" placeholder="Повторите пароль">
+      <button id="registerBtn" class="btn primary" style="width:100%;margin-top:14px">Зарегистрироваться</button>
+      <div id="regMsg" class="msg"></div>
+    </div>
+  </section>
+
+  <section id="wallet" class="hidden">
+    <div class="card">
+      <div class="header-user">
+        <div class="who">
+          <strong><span id="currentUser"></span><span id="adminBadge" class="badge hidden">ADMIN</span></strong>
+          Демо-аккаунт
+        </div>
+        <button id="logoutBtn" class="btn ghost">Выйти</button>
+      </div>
+      <div class="balance-label">Демо-баланс</div>
+      <div class="balance">$<span id="balance">0.00</span></div>
+      <div class="muted" style="font-size:12px">Условные деньги внутри демонстрации.</div>
+    </div>
+
+    <div class="card">
+      <h2>Перевод между демо-балансами</h2>
+      <label>Получатель</label>
+      <input id="toUser" placeholder="Логин получателя">
+      <label>Сумма, USD</label>
+      <div class="transfer-grid">
+        <input id="amount" type="number" min="0.01" step="0.01" placeholder="0.00">
+        <button id="sendBtn" class="btn primary">Отправить</button>
+      </div>
+      <div id="sendMsg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>Криптовалюты <span class="muted" style="font-size:12px;font-weight:500">(симуляция)</span></h2>
+      <div id="market" class="market"></div>
+    </div>
+
+    <div class="card">
+      <h2>История</h2>
+      <div id="history" class="history"></div>
+    </div>
+
+    <div class="note">
+      DEMO ONLY — цены и балансы вымышленные. Реальные средства, seed-фразы и приватные ключи не используются.
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.ready(); tg.expand(); }
+
+  const USERS_KEY = "cryptobitora_users_v3";
+  const SESSION_KEY = "cryptobitora_session_v3";
+  const ADMIN_USER = "Anton";
+  const ADMIN_HASH = "8efbbf7f44942af8e4e29240a7321c51f8dee8dbc9745c5b407e8ba5c379f45e";
+  const $ = id => document.getElementById(id);
+
+  async function sha256(text) {
+    const data = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2,"0")).join("");
+  }
+
+  function loadUsers() {
+    let users = {};
+    try {
+      const raw = localStorage.getItem(USERS_KEY);
+      if (raw) users = JSON.parse(raw);
+    } catch(e) {
+      users = {};
+    }
+
+    if (!users[ADMIN_USER]) {
+      users[ADMIN_USER] = {
+        passHash: ADMIN_HASH,
+        balance: 5000,
+        admin: true,
+        history: [{text:"Админ-аккаунт создан с демо-балансом $5000.00",ts:Date.now()}]
+      };
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+    return users;
+  }
+
+  function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  function findUser(users, name) {
+    return Object.keys(users).find(u => u.toLowerCase() === name.toLowerCase());
+  }
+
+  function setTab(tab) {
+    const login = tab === "login";
+    $("loginTab").classList.toggle("active", login);
+    $("registerTab").classList.toggle("active", !login);
+    $("loginForm").classList.toggle("hidden", !login);
+    $("registerForm").classList.toggle("hidden", login);
+    $("loginMsg").textContent = "";
+    $("regMsg").textContent = "";
+    $("regMsg").classList.remove("ok");
+  }
+
+  $("loginTab").onclick = () => setTab("login");
+  $("registerTab").onclick = () => setTab("register");
+
+  $("registerBtn").onclick = async () => {
+    const username = $("regUser").value.trim();
+    const password = $("regPass").value;
+    const password2 = $("regPass2").value;
+    const msg = $("regMsg");
+
+    msg.classList.remove("ok");
+
+    if (!/^[A-Za-zА-Яа-яЁёЇїІіЄєҐґ0-9_]+$/.test(username) || username.length < 3) {
+      msg.textContent = "Логин: минимум 3 символа, только буквы, цифры и _.";
+      return;
+    }
+    if (password.length < 6) {
+      msg.textContent = "Пароль должен содержать минимум 6 символов.";
+      return;
+    }
+    if (password !== password2) {
+      msg.textContent = "Пароли не совпадают.";
+      return;
+    }
+
+    const users = loadUsers();
+    if (findUser(users, username)) {
+      msg.textContent = "Такой логин уже зарегистрирован.";
+      return;
+    }
+
+    users[username] = {
+      passHash: await sha256(password),
+      balance: 0,
+      admin: false,
+      history: [{text:"Аккаунт создан. Начальный демо-баланс: $0.00",ts:Date.now()}]
+    };
+    saveUsers(users);
+
+    msg.classList.add("ok");
+    msg.textContent = "Регистрация успешна. Сейчас откроется вход.";
+    $("loginUser").value = username;
+    $("regUser").value = "";
+    $("regPass").value = "";
+    $("regPass2").value = "";
+    setTimeout(() => setTab("login"), 900);
+  };
+
+  $("loginBtn").onclick = async () => {
+    const inputName = $("loginUser").value.trim();
+    const password = $("loginPass").value;
+    const users = loadUsers();
+    const username = findUser(users, inputName);
+
+    if (!username) {
+      $("loginMsg").textContent = "Пользователь не найден.";
+      return;
+    }
+
+    const hash = await sha256(password);
+    if (hash !== users[username].passHash) {
+      $("loginMsg").textContent = "Неверный пароль.";
+      return;
+    }
+
+    localStorage.setItem(SESSION_KEY, username);
+    $("loginPass").value = "";
+    showWallet();
+  };
+
+  $("logoutBtn").onclick = () => {
+    localStorage.removeItem(SESSION_KEY);
+    $("wallet").classList.add("hidden");
+    $("authCard").classList.remove("hidden");
+    $("loginMsg").textContent = "";
+  };
+
+  function money(n) {
+    return Number(n || 0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function showWallet() {
+    const username = localStorage.getItem(SESSION_KEY);
+    const users = loadUsers();
+    if (!username || !users[username]) return;
+
+    $("authCard").classList.add("hidden");
+    $("wallet").classList.remove("hidden");
+    $("currentUser").textContent = username;
+    $("adminBadge").classList.toggle("hidden", !users[username].admin);
+    $("balance").textContent = money(users[username].balance);
+    renderHistory(users[username].history || []);
+  }
+
+  $("sendBtn").onclick = () => {
+    const sender = localStorage.getItem(SESSION_KEY);
+    const users = loadUsers();
+    if (!sender || !users[sender]) return;
+
+    const target = findUser(users, $("toUser").value.trim());
+    const amount = Number($("amount").value);
+    const msg = $("sendMsg");
+    msg.classList.remove("ok");
+
+    if (!target) return msg.textContent = "Получатель не найден.";
+    if (target === sender) return msg.textContent = "Нельзя отправить самому себе.";
+    if (!Number.isFinite(amount) || amount <= 0) return msg.textContent = "Введите корректную сумму.";
+    if (users[sender].balance < amount) return msg.textContent = "Недостаточно демо-баланса.";
+
+    users[sender].balance = +(users[sender].balance - amount).toFixed(2);
+    users[target].balance = +(users[target].balance + amount).toFixed(2);
+
+    const now = Date.now();
+    users[sender].history = users[sender].history || [];
+    users[target].history = users[target].history || [];
+    users[sender].history.unshift({text:`Отправлено $${money(amount)} пользователю ${target}`,ts:now});
+    users[target].history.unshift({text:`Получено $${money(amount)} от ${sender}`,ts:now});
+
+    saveUsers(users);
+    msg.classList.add("ok");
+    msg.textContent = "Демо-перевод выполнен.";
+    $("amount").value = "";
+    $("balance").textContent = money(users[sender].balance);
+    renderHistory(users[sender].history);
+  };
+
+  function renderHistory(items) {
+    const box = $("history");
+    box.innerHTML = "";
+    if (!items.length) {
+      box.innerHTML = '<div class="muted">Пока нет операций.</div>';
+      return;
+    }
+    items.slice(0,20).forEach(item => {
+      const el = document.createElement("div");
+      el.className = "hist-item";
+      const title = document.createElement("b");
+      title.textContent = item.text;
+      const date = document.createElement("div");
+      date.className = "muted";
+      date.style.fontSize = "12px";
+      date.style.marginTop = "4px";
+      date.textContent = new Date(item.ts).toLocaleString();
+      el.appendChild(title);
+      el.appendChild(date);
+      box.appendChild(el);
+    });
+  }
+
+  const market = [
+    {sym:"BTC",name:"Bitcoin",icon:"₿",price:68250},
+    {sym:"TON",name:"Toncoin",icon:"◆",price:5.42},
+    {sym:"USDT",name:"Tether",icon:"₮",price:1.00}
+  ];
+
+  function renderMarket() {
+    const box = $("market");
+    box.innerHTML = "";
+    market.forEach(c => {
+      const move = Math.random()*2.2-1.1;
+      if (c.sym !== "USDT") c.price *= 1 + move/100;
+      else c.price = 1 + (Math.random()-.5)*0.002;
+
+      const el = document.createElement("div");
+      el.className = "coin";
+      el.innerHTML = `
+        <div class="coin-left">
+          <div class="icon">${c.icon}</div>
+          <div><div class="coin-name">${c.name}</div><div class="ticker">${c.sym}</div></div>
+        </div>
+        <div class="price">
+          <strong>$${c.price.toLocaleString("en-US",{minimumFractionDigits:c.price<10?2:0,maximumFractionDigits:2})}</strong>
+          <div class="chg ${move>=0?"up":"down"}">${move>=0?"▲":"▼"} ${Math.abs(move).toFixed(2)}% ${move>=0?"поднялась":"упала"}</div>
+        </div>`;
+      box.appendChild(el);
+    });
+  }
+
+  loadUsers();
+  renderMarket();
+  setInterval(renderMarket,5000);
+
+  const sessionUser = localStorage.getItem(SESSION_KEY);
+  const users = loadUsers();
+  if (sessionUser && users[sessionUser]) showWallet();
+})();
+</script>
+</body>
+</html>
